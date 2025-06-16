@@ -1,12 +1,9 @@
-
 import { Calendar, CheckCircle, AlertTriangle, Clock, Plus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useState } from 'react';
+import BikashPaymentModal from './BikashPaymentModal';
 import { useToast } from '@/hooks/use-toast';
 
 interface MonthlyPayment {
@@ -34,8 +31,8 @@ const monthlyData: MonthlyPayment[] = [
 ];
 
 const MonthlyPaymentGrid = () => {
-  const [additionalAmount, setAdditionalAmount] = useState('');
   const [selectedMonth, setSelectedMonth] = useState<MonthlyPayment | null>(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const { toast } = useToast();
 
   const getStatusIcon = (status: string) => {
@@ -68,15 +65,14 @@ const MonthlyPaymentGrid = () => {
     }
   };
 
-  const handleAddContribution = () => {
-    if (selectedMonth && additionalAmount) {
-      toast({
-        title: "Contribution Added",
-        description: `Successfully added $${additionalAmount} to ${selectedMonth.month}`,
-      });
-      setAdditionalAmount('');
-      setSelectedMonth(null);
-    }
+  const handleAddMoreClick = (payment: MonthlyPayment) => {
+    setSelectedMonth(payment);
+    setIsPaymentModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsPaymentModalOpen(false);
+    setSelectedMonth(null);
   };
 
   return (
@@ -115,47 +111,15 @@ const MonthlyPaymentGrid = () => {
                 )}
 
                 {payment.canAddMore && (
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full mt-2"
-                        onClick={() => setSelectedMonth(payment)}
-                      >
-                        <Plus className="h-3 w-3 mr-1" />
-                        Add More
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Add Contribution for {payment.month}</DialogTitle>
-                        <DialogDescription>
-                          Add an additional amount to your monthly contribution.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="amount">Additional Amount</Label>
-                          <Input
-                            id="amount"
-                            type="number"
-                            placeholder="Enter amount"
-                            value={additionalAmount}
-                            onChange={(e) => setAdditionalAmount(e.target.value)}
-                          />
-                        </div>
-                        <div className="flex justify-end space-x-2">
-                          <Button variant="outline" onClick={() => setSelectedMonth(null)}>
-                            Cancel
-                          </Button>
-                          <Button onClick={handleAddContribution}>
-                            Add Contribution
-                          </Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full mt-2"
+                    onClick={() => handleAddMoreClick(payment)}
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Add More
+                  </Button>
                 )}
               </div>
             </CardContent>
@@ -185,6 +149,15 @@ const MonthlyPaymentGrid = () => {
           </CardContent>
         </Card>
       </div>
+
+      {selectedMonth && (
+        <BikashPaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={handleCloseModal}
+          month={selectedMonth.month}
+          fixedAmount={selectedMonth.fixedAmount}
+        />
+      )}
     </div>
   );
 };

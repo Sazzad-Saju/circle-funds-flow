@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ import FundGrowthChart from '@/components/FundGrowthChart';
 import MonthlyPaymentGrid from '@/components/MonthlyPaymentGrid';
 import ContributionChart from '@/components/ContributionChart';
 import TopContributors from '@/components/TopContributors';
+import Gallery from '@/components/Gallery';
 
 interface User {
   id: string;
@@ -213,6 +213,9 @@ const Index = () => {
                 </CardContent>
               </Card>
             </div>
+            
+            {/* Add Gallery Section */}
+            <Gallery />
           </TabsContent>
 
           <TabsContent value="payments" className="space-y-6">
