@@ -1,20 +1,21 @@
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Users, ThumbsUp, Plus, Clock } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Calendar, MapPin, Users, ThumbsUp, Plus, Camera } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Event {
   id: string;
   title: string;
-  type: 'tour' | 'food' | 'meeting' | 'social';
   description: string;
+  type: 'tour' | 'foodie' | 'business' | 'social';
   date: string;
   location: string;
   votes: number;
@@ -23,83 +24,75 @@ interface Event {
   hasVoted: boolean;
 }
 
-const eventTypeColors = {
-  tour: 'bg-blue-100 text-blue-800',
-  food: 'bg-orange-100 text-orange-800', 
-  meeting: 'bg-purple-100 text-purple-800',
-  social: 'bg-green-100 text-green-800'
-};
-
 const Events = () => {
   const [events, setEvents] = useState<Event[]>([
     {
-      id: "1",
-      title: "Weekend Trip to Sylhet",
-      type: "tour",
-      description: "A relaxing trip to tea gardens and beautiful landscapes",
-      date: "2024-03-15",
-      location: "Sylhet, Bangladesh",
-      votes: 15,
-      status: "pending",
-      createdBy: "Alex Johnson",
+      id: '1',
+      title: 'Cox\'s Bazar Beach Tour',
+      description: 'A relaxing weekend trip to the longest beach in the world. Great opportunity for team bonding.',
+      type: 'tour',
+      date: '2024-07-15',
+      location: 'Cox\'s Bazar, Bangladesh',
+      votes: 18,
+      status: 'approved',
+      createdBy: 'Sarah Ahmed',
       hasVoted: false
     },
     {
-      id: "2", 
-      title: "Annual Food Festival",
-      type: "food",
-      description: "Taste different cuisines and enjoy good food together",
-      date: "2024-02-28",
-      location: "Dhanmondi, Dhaka",
-      votes: 22,
-      status: "approved",
-      createdBy: "Sarah Wilson",
+      id: '2',
+      title: 'Traditional Food Festival',
+      description: 'Explore authentic Bangladeshi cuisine at the annual food festival in Old Dhaka.',
+      type: 'foodie',
+      date: '2024-06-20',
+      location: 'Old Dhaka',
+      votes: 12,
+      status: 'pending',
+      createdBy: 'Rahman Khan',
       hasVoted: true
     },
     {
-      id: "3",
-      title: "Quarterly Review Meeting",
-      type: "meeting", 
-      description: "Discuss fund performance and future plans",
-      date: "2024-02-20",
-      location: "Conference Room, Gulshan",
+      id: '3',
+      title: 'Investment Summit 2024',
+      description: 'Learn about new investment opportunities and network with industry professionals.',
+      type: 'business',
+      date: '2024-08-10',
+      location: 'Dhaka Regency Hotel',
       votes: 8,
-      status: "approved",
-      createdBy: "Mike Chen",
+      status: 'pending',
+      createdBy: 'Alex Johnson',
       hasVoted: false
     }
   ]);
 
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: '',
-    type: '' as Event['type'],
     description: '',
+    type: '',
     date: '',
     location: ''
   });
-
   const { toast } = useToast();
 
   const handleVote = (eventId: string) => {
-    setEvents(events =>
-      events.map(event =>
-        event.id === eventId
-          ? { ...event, votes: event.votes + 1, hasVoted: true }
-          : event
-      )
-    );
+    setEvents(prev => prev.map(event => {
+      if (event.id === eventId && !event.hasVoted) {
+        return { ...event, votes: event.votes + 1, hasVoted: true };
+      }
+      return event;
+    }));
     
     toast({
-      title: "Vote Recorded!",
-      description: "Your vote has been counted for this event",
+      title: "Vote Submitted",
+      description: "Your vote has been recorded successfully.",
     });
   };
 
   const handleCreateEvent = () => {
-    if (!newEvent.title || !newEvent.type || !newEvent.description || !newEvent.date || !newEvent.location) {
+    if (!newEvent.title || !newEvent.type || !newEvent.date || !newEvent.location) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all fields",
+        description: "Please fill in all required fields.",
         variant: "destructive"
       });
       return;
@@ -107,102 +100,134 @@ const Events = () => {
 
     const event: Event = {
       id: Date.now().toString(),
-      ...newEvent,
-      votes: 0,
-      status: "pending",
-      createdBy: "You",
-      hasVoted: false
+      title: newEvent.title,
+      description: newEvent.description,
+      type: newEvent.type as any,
+      date: newEvent.date,
+      location: newEvent.location,
+      votes: 1,
+      status: 'pending',
+      createdBy: 'You',
+      hasVoted: true
     };
 
-    setEvents([event, ...events]);
-    setNewEvent({ title: '', type: '' as Event['type'], description: '', date: '', location: '' });
+    setEvents(prev => [event, ...prev]);
+    setNewEvent({ title: '', description: '', type: '', date: '', location: '' });
+    setIsCreateModalOpen(false);
     
     toast({
-      title: "Event Created!",
-      description: "Your event proposal has been submitted for voting",
+      title: "Event Created",
+      description: "Your event has been submitted for approval.",
     });
+  };
+
+  const getEventTypeColor = (type: string) => {
+    switch (type) {
+      case 'tour': return 'bg-blue-100 text-blue-800';
+      case 'foodie': return 'bg-orange-100 text-orange-800';
+      case 'business': return 'bg-green-100 text-green-800';
+      case 'social': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved': return 'bg-green-100 text-green-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <CardTitle className="text-lg sm:text-xl">Community Events</CardTitle>
-            <CardDescription className="text-sm">Propose and vote on upcoming events</CardDescription>
-          </div>
-          <Dialog>
+        <div className="flex justify-between items-center">
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-purple-600" />
+            Community Events
+          </CardTitle>
+          
+          <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" className="w-full sm:w-auto">
+              <Button size="sm">
                 <Plus className="h-4 w-4 mr-2" />
-                Propose Event
+                Create Event
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
-                <DialogTitle>Propose New Event</DialogTitle>
+                <DialogTitle>Create New Event</DialogTitle>
                 <DialogDescription>
-                  Create an event proposal for the community to vote on
+                  Propose a new event for the community. Other members can vote, and admin will approve popular events.
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
+              <div className="space-y-4 py-4">
                 <div>
                   <Label htmlFor="title">Event Title</Label>
                   <Input
                     id="title"
-                    placeholder="Enter event title"
                     value={newEvent.title}
-                    onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
-                    className="mt-1"
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="Enter event title"
                   />
                 </div>
+                
                 <div>
                   <Label htmlFor="type">Event Type</Label>
-                  <Select value={newEvent.type} onValueChange={(value) => setNewEvent({...newEvent, type: value as Event['type']})}>
-                    <SelectTrigger className="mt-1">
+                  <Select value={newEvent.type} onValueChange={(value) => setNewEvent(prev => ({ ...prev, type: value }))}>
+                    <SelectTrigger>
                       <SelectValue placeholder="Select event type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="tour">Tour/Trip</SelectItem>
-                      <SelectItem value="food">Food Event</SelectItem>
-                      <SelectItem value="meeting">Meeting</SelectItem>
-                      <SelectItem value="social">Social Gathering</SelectItem>
+                      <SelectItem value="tour">Tour & Travel</SelectItem>
+                      <SelectItem value="foodie">Food & Dining</SelectItem>
+                      <SelectItem value="business">Business & Networking</SelectItem>
+                      <SelectItem value="social">Social & Entertainment</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+
                 <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Input
-                    id="description"
-                    placeholder="Describe the event"
-                    value={newEvent.description}
-                    onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="date">Date</Label>
+                  <Label htmlFor="date">Event Date</Label>
                   <Input
                     id="date"
                     type="date"
                     value={newEvent.date}
-                    onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
-                    className="mt-1"
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, date: e.target.value }))}
                   />
                 </div>
+
                 <div>
                   <Label htmlFor="location">Location</Label>
                   <Input
                     id="location"
-                    placeholder="Event location"
                     value={newEvent.location}
-                    onChange={(e) => setNewEvent({...newEvent, location: e.target.value})}
-                    className="mt-1"
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, location: e.target.value }))}
+                    placeholder="Enter event location"
                   />
                 </div>
-                <Button onClick={handleCreateEvent} className="w-full">
-                  Create Event Proposal
-                </Button>
+
+                <div>
+                  <Label htmlFor="description">Description (Optional)</Label>
+                  <Textarea
+                    id="description"
+                    value={newEvent.description}
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Describe your event idea..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleCreateEvent}>
+                    Create Event
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
@@ -211,66 +236,59 @@ const Events = () => {
       <CardContent>
         <div className="space-y-4">
           {events.map((event) => (
-            <div key={event.id} className="p-4 border rounded-lg bg-white shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
+            <div key={event.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">{event.title}</h3>
-                    <Badge className={`text-xs ${eventTypeColors[event.type]}`}>
-                      {event.type}
+                  <div className="flex items-center gap-2 mb-2">
+                    <h4 className="font-semibold text-lg">{event.title}</h4>
+                    <Badge className={getEventTypeColor(event.type)}>
+                      {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
                     </Badge>
-                    <Badge variant={event.status === 'approved' ? 'default' : event.status === 'rejected' ? 'destructive' : 'secondary'} className="text-xs">
-                      {event.status}
+                    <Badge className={getStatusColor(event.status)}>
+                      {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
                     </Badge>
                   </div>
-                  <p className="text-gray-600 text-sm mb-3">{event.description}</p>
-                </div>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-3 text-xs sm:text-sm text-gray-500 mb-3">
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span>{new Date(event.date).toLocaleDateString()}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span className="truncate">{event.location}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span>by {event.createdBy}</span>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 text-sm text-gray-600">
-                    <ThumbsUp className="h-4 w-4" />
-                    <span>{event.votes} votes</span>
+                  {event.description && (
+                    <p className="text-gray-600 text-sm mb-3">{event.description}</p>
+                  )}
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      <span>{new Date(event.date).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      <span>{event.location}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Users className="h-4 w-4" />
+                      <span>by {event.createdBy}</span>
+                    </div>
                   </div>
                 </div>
                 
-                {event.status === 'pending' && !event.hasVoted && (
+                <div className="flex items-center gap-2 ml-4">
                   <Button
-                    size="sm"
                     variant="outline"
+                    size="sm"
                     onClick={() => handleVote(event.id)}
-                    className="w-full sm:w-auto text-xs sm:text-sm"
+                    disabled={event.hasVoted}
+                    className={event.hasVoted ? 'bg-blue-50' : ''}
                   >
-                    <ThumbsUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                    Vote
+                    <ThumbsUp className={`h-4 w-4 mr-1 ${event.hasVoted ? 'text-blue-600' : ''}`} />
+                    {event.votes}
                   </Button>
-                )}
-                
-                {event.hasVoted && (
-                  <Badge variant="outline" className="text-xs w-fit">
-                    <ThumbsUp className="h-3 w-3 mr-1" />
-                    Voted
-                  </Badge>
-                )}
+                </div>
               </div>
             </div>
           ))}
+
+          {events.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p>No events yet. Create the first one!</p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

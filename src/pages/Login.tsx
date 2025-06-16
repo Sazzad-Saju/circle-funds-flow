@@ -94,15 +94,15 @@ const Login = () => {
       </div>
 
       {/* Login Card */}
-      <Card className="w-full max-w-sm sm:max-w-md relative z-10 bg-white/95 backdrop-blur-sm shadow-2xl mx-4">
-        <CardHeader className="text-center space-y-2 pb-4">
-          <CardTitle className="text-xl sm:text-2xl font-bold text-gray-900">Welcome Back</CardTitle>
-          <CardDescription className="text-sm sm:text-base">Sign in to your Khajana Fund account</CardDescription>
+      <Card className="w-full max-w-md relative z-10 bg-white/95 backdrop-blur-sm shadow-2xl">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-gray-900">Welcome Back</CardTitle>
+          <CardDescription>Sign in to your Khajana Fund account</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+            <div>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -110,12 +110,11 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-10 sm:h-11"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+            <div>
+              <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -124,7 +123,6 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-10 sm:h-11 pr-10"
                 />
                 <Button
                   type="button"
@@ -142,21 +140,21 @@ const Login = () => {
               </div>
             </div>
 
-            <Button type="submit" className="w-full h-10 sm:h-11" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span className="text-sm">Signing in...</span>
+                  Signing in...
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
                   <LogIn className="h-4 w-4" />
-                  <span className="text-sm">Sign In</span>
+                  Sign In
                 </div>
               )}
             </Button>
 
-            <div className="text-center text-xs sm:text-sm text-gray-600 pt-2">
+            <div className="text-center text-sm text-gray-600">
               Demo credentials: any email and password will work
             </div>
           </form>
@@ -164,12 +162,12 @@ const Login = () => {
       </Card>
 
       {/* Image indicators */}
-      <div className="absolute bottom-4 sm:bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
         {backgroundImages.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentImageIndex(index)}
-            className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all ${
+            className={`w-3 h-3 rounded-full transition-all ${
               index === currentImageIndex 
                 ? 'bg-white' 
                 : 'bg-white/50 hover:bg-white/75'
