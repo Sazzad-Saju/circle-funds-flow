@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,13 +6,18 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, TrendingUp, DollarSign, Calendar, Users, Target } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertTriangle, TrendingUp, DollarSign, Calendar, Users, Target, User, LogOut, MessageCircle, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import FundGrowthChart from '@/components/FundGrowthChart';
 import MonthlyPaymentGrid from '@/components/MonthlyPaymentGrid';
 import ContributionChart from '@/components/ContributionChart';
 import TopContributors from '@/components/TopContributors';
 import Gallery from '@/components/Gallery';
+import ProfileModal from '@/components/ProfileModal';
+import MessagesModal from '@/components/MessagesModal';
+import NotificationsDropdown from '@/components/NotificationsDropdown';
 
 interface User {
   id: string;
@@ -34,7 +40,10 @@ const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [fundData, setFundData] = useState<FundData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isMessagesModalOpen, setIsMessagesModalOpen] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Mock data - replace with your API calls
   useEffect(() => {
@@ -48,7 +57,7 @@ const Index = () => {
           id: "1",
           name: "Alex Johnson",
           email: "alex@friendcircle.com",
-          avatar: "/placeholder.svg",
+          avatar: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=100&h=100&fit=crop&crop=face",
           totalContribution: 12500,
           pendingAmount: 500
         });
@@ -76,6 +85,23 @@ const Index = () => {
     fetchData();
   }, [toast]);
 
+  const handleLogout = () => {
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+    });
+    navigate('/login');
+  };
+
+  const handleUpdateUser = (updatedUser: { name: string; email: string; avatar?: string }) => {
+    if (user) {
+      setUser({
+        ...user,
+        ...updatedUser
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -102,14 +128,40 @@ const Index = () => {
             
             {user && (
               <div className="flex items-center space-x-4">
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                  <p className="text-sm text-gray-500">{user.email}</p>
-                </div>
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                </Avatar>
+                <NotificationsDropdown />
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center space-x-3 hover:bg-gray-50">
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                        <p className="text-sm text-gray-500">{user.email}</p>
+                      </div>
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                      </Avatar>
+                      <ChevronDown className="h-4 w-4 text-gray-500" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setIsProfileModalOpen(true)}>
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsMessagesModalOpen(true)}>
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      <span>Messages</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Logout</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             )}
           </div>
@@ -285,6 +337,22 @@ const Index = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Modals */}
+      {user && (
+        <>
+          <ProfileModal
+            isOpen={isProfileModalOpen}
+            onClose={() => setIsProfileModalOpen(false)}
+            user={user}
+            onUpdateUser={handleUpdateUser}
+          />
+          <MessagesModal
+            isOpen={isMessagesModalOpen}
+            onClose={() => setIsMessagesModalOpen(false)}
+          />
+        </>
+      )}
     </div>
   );
 };
